@@ -9,6 +9,7 @@
 #import "SentryLog.h"
 #import "SentrySDK.h"
 #import "SentryThread.h"
+#import "SentrySDK+Private.h"
 
 @implementation SentryCrashReportSink
 
@@ -17,7 +18,7 @@
                  sentReports:(NSMutableArray *)sentReports
 {
     [sentReports addObject:report];
-    [SentrySDK captureEvent:event];
+    [SentrySDK captureCrash:event];
 }
 
 - (void)filterReports:(NSArray *)reports

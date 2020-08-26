@@ -37,7 +37,7 @@ class SentrySessionGeneratorTests: XCTestCase {
     /**
      * Disabled on purpose. This test just sends sessions to Sentry, but doesn't verify that they arrive there properly.
      */
-    func tesSendSessions() {
+    func testSendSessions() {
         sendSessions(amount: Sessions(healthy: 10, errored: 10, crashed: 1, abnormal: 1))
     }
     
@@ -70,6 +70,12 @@ class SentrySessionGeneratorTests: XCTestCase {
             // send crashed session
             autoSessionTrackingIntegration.stop()
             autoSessionTrackingIntegration.install(with: options)
+            
+            let sink = SentryCrashReportSink()
+            sink.filterReports([getCrashReport("Resources/crash-report-1") ?? []], onCompletion: nil)
+            // wait until report sink finishes converting report
+            delayNonBlocking()
+            
             goToForeground()
         }
         sentryCrash.internalCrashedLastLaunch = false
@@ -85,6 +91,13 @@ class SentrySessionGeneratorTests: XCTestCase {
         
         // Wait 5 seconds to send all sessions
         delayNonBlocking(timeout: 5)
+    }
+    
+    private func getCrashReport(_ path: String) -> [AnyHashable : Any]? {
+        let jsonPath = Bundle(for: type(of: self)).path(forResource: path, ofType: "json")
+        let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonPath ?? ""))
+        return try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [AnyHashable : Any]
+
     }
     
     private func startSdk() {

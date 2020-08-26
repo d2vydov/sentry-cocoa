@@ -18,6 +18,8 @@ SentryHub ()
 @property (nonatomic, strong) SentryScope *_Nullable scope;
 @property (nonatomic, strong) SentryCrashAdapter *sentryCrashWrapper;
 
+@property (nonatomic, strong) SentrySession *_Nullable crashedSession;
+
 @end
 
 @implementation SentryHub {
@@ -131,6 +133,9 @@ SentryHub ()
                          andLevel:kSentryLogLevelDebug];
 
         [session endSessionCrashedWithTimestamp:timeSinceLastCrash];
+        self.crashedSession = session;
+        [self deleteCurrentSession];
+        return;
     } else {
         if (nil == timestamp) {
             [SentryLog
@@ -183,6 +188,22 @@ SentryHub ()
     }
 
     return sessionCopy;
+}
+
+- (SentryId *)captureCrash:(SentryEvent *)event withScope:(SentryScope *_Nullable)scope {
+    SentryClient *client = [self getClient];
+    
+    if (nil == client) {
+        return SentryId.empty;
+    }
+    
+    if (nil != self.crashedSession) {
+        SentrySession *crashedSessionCopy = [self.crashedSession copy];
+        self.crashedSession = nil;
+        return [client captureEvent:event withSession:crashedSessionCopy withScope:scope];
+    } else {
+        return [self captureEvent:event withScope:scope];
+    }
 }
 
 - (SentryId *)captureEvent:(SentryEvent *)event withScope:(SentryScope *_Nullable)scope

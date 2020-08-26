@@ -146,6 +146,14 @@ SentryClient ()
     return [self sendEvent:event withScope:scope alwaysAttachStacktrace:NO];
 }
 
+- (SentryId *)captureEvent:(SentryEvent *)event
+withSession:(SentrySession *)session
+                 withScope:(SentryScope *_Nullable)scope {
+    
+    event = [self prepareEvent:event withScope:scope alwaysAttachStacktrace:NO];
+    return [self sendEvent:event withSession:session];
+}
+
 - (SentryId *)sendEvent:(SentryEvent *)event
                  withScope:(SentryScope *_Nullable)scope
     alwaysAttachStacktrace:(BOOL)alwaysAttachStacktrace

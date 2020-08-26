@@ -7,6 +7,7 @@
 #import "SentryLog.h"
 #import "SentryMeta.h"
 #import "SentryScope.h"
+#import "SentryHub+Private.h"
 
 static SentryLogLevel logLevel = kSentryLogLevelError;
 
@@ -82,6 +83,11 @@ static SentryHub *currentHub;
 + (SentryId *)captureEvent:(SentryEvent *)event
 {
     return [SentrySDK captureEvent:event withScope:[SentrySDK.currentHub getScope]];
+}
+
++ (SentryId *)captureCrash:(SentryEvent *)event {
+
+    return [SentrySDK.currentHub captureCrash:event withScope:[SentrySDK.currentHub getScope]];
 }
 
 + (SentryId *)captureEvent:(SentryEvent *)event
